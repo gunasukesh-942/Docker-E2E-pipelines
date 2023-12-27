@@ -1,0 +1,48 @@
+pipeline {
+    agent any
+    stages{
+        stage("cleanws"){
+            steps{
+                cleanWs()
+            }
+        }
+        stage("code"){
+            steps{
+                git branch: 'master', url: 'https://github.com/gunasukesh-942/staticsite-docker.git'
+            }
+        }
+        stage("build image"){
+            steps{
+                sh"docker build -t sukeshguna942/docker /var/lib/jenkins/workspace/job-1/html/."
+            }
+        }
+        stage("dockerhub"){
+            steps{
+                script{
+                    withDockerRegistry(credentialsId: 'c8f15b37-af2d-46e2-8329-d75d547b03d7') {
+                            sh"docker push sukeshguna942/docker"
+                            sh "docker rmi sukeshguna942/docker"
+                    }
+                }
+            }
+        }
+        stage("container creation"){
+            steps{
+                sh " docker run -itd --name cont$BUILD_ID -p 80$BUILD_ID:80 sukeshguna942/docker"
+            }
+        }
+        
+    }
+    post{
+        success{
+            mail bcc: '', body:"""Please find the jenkins url : $JENKINS_URL 
+project name is $JOB_NAME and Build id is $BUILD_ID
+KCPD Performance!!""", cc: '', from: '', replyTo: '', subject: """$JOB_NAME is $currentBuild.result""", to: 'sukeshguna942@gmail.com'
+        }
+        failure{
+            mail bcc: '', body:"""Please find the jenkins url : $JENKINS_URL
+find the project name $JOB_NAME and Build id is $BUILD_ID
+Govindha govindha ..:)""", cc: '', from: '', replyTo: '', subject: """$JOB_NAME is $currentBuild.result""", to: 'sukeshguna942@gmail.com'
+        }
+    }
+}
