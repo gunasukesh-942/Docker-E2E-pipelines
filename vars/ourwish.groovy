@@ -1,3 +1,4 @@
-def call () {
-git branch: 'main', url: 'https://github.com/gunasukesh-942/Docker-E2E-pipelines.git'
+def call (string branch,string repo) {
+git branch: "${branch}", url: "${repo}"
+sh 'echo "hello world"'
 }
